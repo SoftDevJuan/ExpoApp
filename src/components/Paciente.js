@@ -18,6 +18,11 @@ const Paciente = ({item, setModalVisible, pacienteEditar}) => {
         }
         return nuevaFecha.toLocaleDateString('es-ES', opciones)
     }
+
+
+
+
+
     
     return(
         <View style={styles.contenedor}>
