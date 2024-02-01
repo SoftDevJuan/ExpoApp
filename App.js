@@ -24,7 +24,7 @@ export default function App() {
   }
 
   const pacienteEliminar = id =>{
-    //console.log('Eliminado', id)
+    console.log('Eliminado', id)
     Alert.alert(
       'Desea Eliminar', 'Los datos ya no se podran recuperar',
       [
