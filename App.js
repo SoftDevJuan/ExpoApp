@@ -1,11 +1,24 @@
 import React,{ useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Pressable, modal, Modal } from 'react-native';
+import { StyleSheet,
+   Text,
+   View, 
+   SafeAreaView, 
+   Pressable, 
+   Modal,
+   FlatList
+} from 'react-native';
 import Form from './src/components/Form';
+import Paciente from './src/components/Paciente';
 
 export default function App() {
   //LOS HOOKS SE COLOCAN EN LA PARTE SUPERIOR
   const [modalVisible, setModalVisible] = useState(false);
-  const [pacientes, setPAcintes] = useState([]);
+  const [pacientes, setPacientes] = useState([]);
+  const [paciente, setPaciente] = useState({});
+  const pacienteEditar = id => {
+    const pacienteEditar = pacientes.filter(paciente => paciente.id === id)
+    setPaciente(pacienteEditar[0])
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -17,16 +30,33 @@ export default function App() {
         <Text style={styles.btnTextoNuevaCita}>Nueva cita</Text>
       </Pressable>
 
-
+      {pacientes.length === 0 ?
+        <Text style={styles.noPacientes}>No hay pacientes aún</Text>:
+        <View>          
+          <FlatList
+            style={styles.listado}
+            data={pacientes}
+            keyExtractor={(item) => item.id}
+            renderItem={({item}) => {
+              return(
+                <Paciente
+                  item={item}
+                  setModalVisible={setModalVisible}
+                  pacienteEditar={pacienteEditar}
+                />
+              )
+            }}
+            />
+        </View>
+      }
 
       <Form 
-        modalVisible = {modalVisible} 
+        modalVisible = {modalVisible}
         setModalVisible={setModalVisible}
         pacientes={pacientes}
-        setPacientes={setPacientes}/>
-
-
-      
+        setPacientes={setPacientes}
+        paciente={paciente}
+      />
     </SafeAreaView>
   );
 }
@@ -64,4 +94,14 @@ const styles = StyleSheet.create({
     fontWeight:'900',
     textTransform:'uppercase',
   },
+  noPacientes:{
+    textAlign:'center',
+    marginTop: 45,
+    fontSize: 24,
+    fontWeight: '700',
+  },
+  listado:{
+    marginTop: 50,
+    marginHorizontal: 30,    
+  }  
 });

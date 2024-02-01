@@ -1,56 +1,64 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { Modal, Text, SafeAreaView, StyleSheet, TextInput, View, ScrollView, Pressable, Alert } from 'react-native';
 import DatePicker from '@dietime/react-native-date-picker';
 
-function Form({modalVisible, setModalVisible, pacientes, setPAcientes}) {
-  const {paciente, setPaciente} = useState('')
-  const {propietario, setPropietario} = useState('')
-  const {email, setEmail} = useState('')
-  const {telefono, setTelefono} = useState('')  
-  const {sintomas, setSintomas} = useState('')
-  const [date, setDate] = useState(new Date())
+function Form({modalVisible, setModalVisible, pacientes, setPacientes, paciente:pacienteObj}) {
+  const [paciente, setPaciente] = useState('')
+  const [id, setId] = useState('')
+  const [propietario, setPropietario] = useState('')
+  const [email, setEmail] = useState('')
+  const [telefono, setTelefono] = useState('')
+  const [fecha, setFecha] = useState(new Date())
+  const [sintomas, setSintomas] = useState('')
 
-
-  const handleCita =()=>{
-    if([paciente, propietario,email,date,sintomas].includes('')){
-      console.log("si funciona");
-      
-      Alert.alert(
-        'Error',
-      'Todos los campos son obligatorios'
-       )
-       return
+  useEffect(() => {
+    if(Object.keys(pacienteObj).length > 0){
+      setId(pacienteObj.id)
+      setPaciente(pacienteObj.paciente)
+      setPropietario(pacienteObj.propietario)
+      setEmail(pacienteObj.email)
+      setTelefono(pacienteObj.telefono)
+      setFecha(pacienteObj.fecha)
+      setSintomas(pacienteObj.sintomas)
     }
+  }, [])
+  console.log(pacienteObj)
 
-    const nuevoPaciiente={
+  const handleCita = () => {
+    //Validar
+    if([paciente, propietario, email, fecha, sintomas].includes('')){
+      // console.log('Hay errores');
+      Alert.alert('Advetancia', 'Llena todos los campos', [{text:'No es nada'}]);
+      return
+    }
+    // console.log('Paciente agregado');
+    const nuevoPaciente = {      
       paciente,
       propietario,
       email,
-      date,
       telefono,
       sintomas,
+      fecha,
+    }    
+    //Revisar si es un nuevo registro o es una edición
+    if (id){
+      //Editando
+    } else{
+      //Nuevo registro
+      nuevoPaciente.id = Date.now()
+      //Agrega nuevo paciente
+      setPacientes([...pacientes, nuevoPaciente])
     }
-     
-    setPacientes([...pacientes,nuevoPaciiente])
+
+    setPacientes([...pacientes, nuevoPaciente])
     setModalVisible(!modalVisible)
 
-    setPaciente('')
     setPropietario('')
     setEmail('')
     setTelefono('')
-    setDate(new Date())
+    setFecha(new Date())
     setSintomas('')
-
   }
-
- 
-
-
-
-
-
-
-
 
   return (
     <Modal animationType='slide' visible={modalVisible}>
@@ -62,6 +70,9 @@ function Form({modalVisible, setModalVisible, pacientes, setPAcientes}) {
               <Text style={styles.tituloBold}>Cita</Text>
             </Text>
           </View>
+          <Pressable style={styles.btnVolver}>
+            <Text style={styles.btnText} onPress={() => setModalVisible(!modalVisible)}>Volver</Text>
+          </Pressable>
           <View style={styles.primerCampo}>
             <Text style={styles.label}>Nombre Paciente</Text>
             <TextInput style={styles.input} keyboardType='' placeholder='Nombre del paciente' placeholderTextColor={'#666'} value={paciente} onChangeText={setPaciente}/>
@@ -75,37 +86,29 @@ function Form({modalVisible, setModalVisible, pacientes, setPAcientes}) {
             <TextInput style={styles.input} keyboardType='email-address' placeholder='example@email.com' placeholderTextColor={'#666'} value={email} onChangeText={setEmail}/>
           </View>
           <View style={styles.campo}>
-            <Text style={styles.label}>Telefono</Text>
-            <TextInput style={styles.input} keyboardType='number-pad' placeholder='Nombre del paciente' placeholderTextColor={'#666'} value={telefono} onChangeText={setTelefono}/>
+            <Text style={styles.label}>Teléfono</Text>
+            <TextInput style={styles.input} keyboardType='number-pad' placeholder='Número teléfonico' placeholderTextColor={'#666'} value={telefono} onChangeText={setTelefono}/>
           </View>
           <View style={styles.campo}>
             <Text style={styles.label}>Fecha</Text>
-            <Text style={styles.label}>{date ? date.toDateString() : "Select date..."}</Text>
+            <Text style={styles.label}>{fecha ? fecha.toDateString() : "Select date..."}</Text>
           </View>
           <View style={styles.datePicker}>
             <DatePicker style={styles.datePicker}
-                value={date}
-                onChange={(value) => setDate(value)}
+                value={fecha}
+                onChange={(value) => setFecha(value)}
                 format="yyyy-mm-dd"
+                locale='es'
+                mode='date'
             />
           </View>
           <View style={styles.campo}>
             <Text style={styles.label}>Sintomas</Text>
-            <TextInput style={[styles.input, styles.sintomasInput]} keyboardType='' placeholder='Nombre del paciente' placeholderTextColor={'#666'} multiline={true} numberOfLines={3} value={sintomas} onChangeText={setSintomas}/>
-          </View>
-
-          <Pressable style={styles.btnVolver}>
-            <Text style={styles.btnText} onPress={() => handleCita()}>Crear</Text>
+            <TextInput style={[styles.input, styles.sintomasInput]} keyboardType='' placeholder='Sintomas' placeholderTextColor={'#666'} multiline={true} numberOfLines={3} value={sintomas} onChangeText={setSintomas}/>
+          </View>          
+          <Pressable style={styles.btnNuevaCita} onPress={handleCita}>
+            <Text style={styles.btnNuevaCitaTexto}>Agregar cita</Text>
           </Pressable>
-
-
-          <Pressable style={styles.btnVolver}>
-            <Text style={styles.btnText} onPress={() => setModalVisible(!modalVisible)}>Volver</Text>
-          </Pressable>
-
-
-
-
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -171,6 +174,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 30,
     marginBottom: 15,    
   },
+  btnNuevaCita: {
+    marginVertical: 50,
+    backgroundColor: '#F59E0B',
+    paddingVertical: 15,
+    marginHorizontal: 30,
+    borderRadius: 10,    
+  },
+  btnNuevaCitaTexto: {
+    textAlign: 'center',
+    color: '#fff',
+    textTransform: 'uppercase',
+    fontSize: 20,
+    fontWeight: '700'
+  },
 })
 
 export default Form
+
+// useEffect(() => {
+
+// })
